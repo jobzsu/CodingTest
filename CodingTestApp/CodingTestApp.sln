@@ -5,6 +5,10 @@ VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodingTestApp", "CodingTestApp.csproj", "{1FB227A8-6E6E-4FFB-BFE6-557B03C5BFDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "..\Common\Common.csproj", "{E309FB1C-46EE-42DA-8B39-A2C3F6E42C38}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RainfaillReadingService", "..\RainfaillReadingService\RainfaillReadingService.csproj", "{E39868A2-DA4A-48B4-BE71-1637E5535DA1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{1FB227A8-6E6E-4FFB-BFE6-557B03C5BFDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FB227A8-6E6E-4FFB-BFE6-557B03C5BFDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1FB227A8-6E6E-4FFB-BFE6-557B03C5BFDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E309FB1C-46EE-42DA-8B39-A2C3F6E42C38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E309FB1C-46EE-42DA-8B39-A2C3F6E42C38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E309FB1C-46EE-42DA-8B39-A2C3F6E42C38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E309FB1C-46EE-42DA-8B39-A2C3F6E42C38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E39868A2-DA4A-48B4-BE71-1637E5535DA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E39868A2-DA4A-48B4-BE71-1637E5535DA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E39868A2-DA4A-48B4-BE71-1637E5535DA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E39868A2-DA4A-48B4-BE71-1637E5535DA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
