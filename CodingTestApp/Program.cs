@@ -20,12 +20,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    //options.CustomOperationIds((ApiDescription ad, string w) =>
-    //{
-    //    ad.ActionDescriptor.
-    //});
-
-    options.SwaggerDoc("v1", new()
+    options.SwaggerDoc("v1", new OpenApiInfo()
     {
         Title = "Rainfall Api",
         Version = "1.0",

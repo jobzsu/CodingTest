@@ -1,17 +1,14 @@
 ﻿using Common.Models.WebAPI;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using RainfaillReadingService.Abstractions;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using System.Text.RegularExpressions;
 
 namespace CodingTestApp.Controllers;
 
 [Route("rainfall")]
 [ApiController]
+[SwaggerTag(description: "Operations relating to rainfall")]
 public class RainfallController : ControllerBase
 {
     private readonly IRainfallReadingFactory _rainfallReadingFactory;
