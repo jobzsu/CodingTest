@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using RainfaillReadingService.Abstractions;
+using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -19,53 +21,32 @@ public class RainfallController : ControllerBase
         _rainfallReadingFactory = rainfallReadingFactory;
     }
 
-    /// <summary>
-    ///  Retrieve the latest readings for the specified stationId
-    /// </summary>
-    /// <param name="stationId">The id of the reading station</param>
-    /// <param name="count">The number of readings to return</param>
-    /// <returns>A list of rainfall readings successfully retrieved</returns>
-    /// <response code="200">A list of rainfall readings successfully retrieved</response>
-    /// <response code="400">Invalid request</response>
-    /// <response code="404">No readings found for the specified stationId</response>
-    /// <response code="500">Internal server error</response>
     [HttpGet]
     [Route("id/{stationId}/readings")]
-    [Produces("application/json")]
-    [ProducesResponseType(typeof(rainfallReadingResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(errorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(errorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(errorResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetReadingsByStationId(string stationId, [Range(1, 100)]int count = 10)
+    [SwaggerOperation(OperationId = "get-rainfall", 
+        Summary = "Get rainfall readings by station Id", 
+        Description = "Retrieve the latest readings for the specified stationId",
+        Tags = ["Rainfall"])]
+    [SwaggerResponse(statusCode: StatusCodes.Status200OK, StatusCode = StatusCodes.Status200OK, 
+        ContentTypes = ["application/json"], 
+        Description = "A list of rainfall readings successfully retrieved", 
+        Type = typeof(rainfallReadingResponse))]
+    [SwaggerResponse(statusCode: StatusCodes.Status400BadRequest, StatusCode = StatusCodes.Status400BadRequest,
+        ContentTypes = ["application/json"],
+        Description = "Invalid request",
+        Type = typeof(errorResponse))]
+    [SwaggerResponse(statusCode: StatusCodes.Status404NotFound, StatusCode = StatusCodes.Status404NotFound,
+        ContentTypes = ["application/json"],
+        Description = "No readings found for the specified stationId",
+        Type = typeof(errorResponse))]
+    [SwaggerResponse(statusCode: StatusCodes.Status500InternalServerError, StatusCode = StatusCodes.Status500InternalServerError,
+        ContentTypes = ["application/json"],
+        Description = "Internal server error",
+        Type = typeof(errorResponse))]
+    public async Task<IActionResult> GetReadingsByStationId(
+        [SwaggerParameter("The id of the reading station", Required = true)]string stationId,
+        [Range(1, 100)]int count = 10)
     {
-        var errorDetails = new List<errorDetail>();
-        if(string.IsNullOrWhiteSpace(stationId))
-        {
-            errorDetails.Add(new errorDetail
-            {
-                PropertyName = "stationId",
-                Message = "StationId is required"
-            });
-        }
-
-        if(Regex.Matches(stationId, @"[^0-9]").Count > 0)
-        {
-            errorDetails.Add(new errorDetail
-            {
-                PropertyName = "stationId",
-                Message = "Invalid StationId format"
-            });
-        }
-
-        if(errorDetails.Any())
-        {
-            return BadRequest(new errorResponse
-            {
-                Message = "Invalid request",
-                Details = errorDetails
-            });
-        }
-
         var result = await _rainfallReadingFactory.GetReadingByStationId(stationId, count);
 
         if (result.IsSuccess)

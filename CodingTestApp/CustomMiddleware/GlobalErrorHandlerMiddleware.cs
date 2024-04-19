@@ -17,11 +17,47 @@ public class GlobalErrorHandlerMiddleware : IMiddleware
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
+		if((!context.Request.Path.Value?.StartsWith("/rainfall/id/") ?? true))
+		{ 
+			await next(context);
+			return;
+		}
+
 		List<errorDetail> errs = new();
 		int statusCode = StatusCodes.Status500InternalServerError;
 
 		try
 		{
+			object? stationId;
+			if(context.Request.RouteValues.TryGetValue("stationId", out stationId))
+			{
+				if(stationId == null || string.IsNullOrWhiteSpace(stationId.ToString()))
+				{
+                    errs.Add(new errorDetail
+					{
+                        PropertyName = "stationId",
+                        Message = "StationId is required"
+                    });
+
+                    statusCode = StatusCodes.Status400BadRequest;
+                }
+				else
+				{
+					var stationIdStr = stationId.ToString();
+
+					if(Regex.Matches(stationIdStr, @"[^0-9]").Count > 0)
+					{
+                        errs.Add(new errorDetail
+						{
+                            PropertyName = "stationId",
+                            Message = "Invalid stationId"
+                        });
+
+                        statusCode = StatusCodes.Status400BadRequest;
+					}
+				}
+			}
+
             StringValues countValues = new StringValues();
 			if(context.Request.Query.TryGetValue("count", out countValues))
 			{
@@ -37,8 +73,6 @@ public class GlobalErrorHandlerMiddleware : IMiddleware
                         });
 
 						statusCode = StatusCodes.Status400BadRequest;
-
-						throw new Exception("Bad Request");
 					}
 				}
 				else
@@ -50,10 +84,13 @@ public class GlobalErrorHandlerMiddleware : IMiddleware
                     });
 
                     statusCode = StatusCodes.Status400BadRequest;
-
-                    throw new Exception("Bad Request");
                 }
 			}
+
+			if(errs.Any())
+			{
+                throw new Exception("Bad Request");
+            }
 
 			await next(context);
 		}

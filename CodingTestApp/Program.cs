@@ -1,4 +1,5 @@
 using CodingTestApp.CustomMiddleware;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
@@ -19,7 +20,12 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("1.0", new()
+    //options.CustomOperationIds((ApiDescription ad, string w) =>
+    //{
+    //    ad.ActionDescriptor.
+    //});
+
+    options.SwaggerDoc("v1", new()
     {
         Title = "Rainfall Api",
         Version = "1.0",
@@ -31,13 +37,14 @@ builder.Services.AddSwaggerGen(options =>
         Description = "An API which provides rainfall reading data",
     });
 
-    
-
     options.AddServer(new()
     {
         Url = "http://localhost:3000",
         Description = "Rainfall Api"
     });
+
+    options.EnableAnnotations();
+    options.SupportNonNullableReferenceTypes();
 
     // Set the comments path for the Swagger JSON and UI.
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -59,7 +66,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(s =>
     {
-        s.SwaggerEndpoint("/swagger/1.0/swagger.yaml", "Rainfall Api");
+        s.SwaggerEndpoint("/swagger/v1/swagger.yaml", "Rainfall Api");
     });
 }
 
