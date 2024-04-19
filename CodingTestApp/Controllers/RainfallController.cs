@@ -11,9 +11,9 @@ namespace CodingTestApp.Controllers;
 [ApiController]
 public class RainfallController : ControllerBase
 {
-    private readonly IRainfaillReadingFactory _rainfallReadingFactory;
+    private readonly IRainfallReadingFactory _rainfallReadingFactory;
 
-    public RainfallController(IRainfaillReadingFactory rainfallReadingFactory)
+    public RainfallController(IRainfallReadingFactory rainfallReadingFactory)
     {
         _rainfallReadingFactory = rainfallReadingFactory;
     }
@@ -37,6 +37,34 @@ public class RainfallController : ControllerBase
     [ProducesResponseType(typeof(errorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetReadingsByStationId(string stationId, [Range(1, 100)]int count = 10)
     {
+        var errorDetails = new List<errorDetail>();
+        if(string.IsNullOrWhiteSpace(stationId))
+        {
+            errorDetails.Add(new errorDetail
+            {
+                PropertyName = "stationId",
+                Message = "StationId is required"
+            });
+        }
+
+        if(count < 1 || count > 100)
+        {
+            errorDetails.Add(new errorDetail
+            {
+                PropertyName = "count",
+                Message = "Count must be between 1 and 100"
+            });
+        }
+
+        if(errorDetails.Any())
+        {
+            return BadRequest(new errorResponse
+            {
+                Message = "Invalid request",
+                Details = errorDetails
+            });
+        }
+
         var result = await _rainfallReadingFactory.GetReadingByStationId(stationId, count);
 
         if (result.IsSuccess)
@@ -45,15 +73,21 @@ public class RainfallController : ControllerBase
         }
         else
         {
+            var errorResponse = new errorResponse()
+            {
+                Message = ((error)result.Data).Message,
+                Details = ((error)result.Data).Details
+            };
+
             switch(result.StatusCode)
             {
                 case StatusCodes.Status404NotFound:
-                    return NotFound(result.Data);
+                    return NotFound(errorResponse);
                 case StatusCodes.Status400BadRequest:
-                    return BadRequest(result.Data);
+                    return BadRequest(errorResponse);
                 case StatusCodes.Status500InternalServerError:
                 default:
-                    return StatusCode(StatusCodes.Status500InternalServerError, result.Data);
+                    return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
         }
     }

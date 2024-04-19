@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using RainfaillReadingService;
 using RainfaillReadingService.Abstractions;
@@ -42,7 +44,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Inject factory
-builder.Services.AddScoped<IRainfaillReadingFactory, RainfaillReadingFactory>();
+builder.Services.AddScoped<IRainfallReadingFactory, RainfallReadingFactory>();
 
 var app = builder.Build();
 
