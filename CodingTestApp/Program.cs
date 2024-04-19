@@ -1,4 +1,6 @@
+using CodingTestApp.CustomMiddleware;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
@@ -26,10 +28,10 @@ builder.Services.AddSwaggerGen(options =>
             Name = "Sorted",
             Url = new Uri("https://www.sorted.com")
         },
-        Description = "An API which provides rainfall reading data"
+        Description = "An API which provides rainfall reading data",
     });
 
-    options.SwaggerGeneratorOptions.DescribeAllParametersInCamelCase = true;
+    
 
     options.AddServer(new()
     {
@@ -46,6 +48,9 @@ builder.Services.AddSwaggerGen(options =>
 // Inject factory
 builder.Services.AddScoped<IRainfallReadingFactory, RainfallReadingFactory>();
 
+// Inject global error handler middleware
+builder.Services.AddTransient<GlobalErrorHandlerMiddleware>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -57,6 +62,8 @@ if (app.Environment.IsDevelopment())
         s.SwaggerEndpoint("/swagger/1.0/swagger.yaml", "Rainfall Api");
     });
 }
+
+app.UseMiddleware<GlobalErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 

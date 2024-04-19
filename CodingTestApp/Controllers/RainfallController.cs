@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using RainfaillReadingService.Abstractions;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace CodingTestApp.Controllers;
 
@@ -47,12 +48,12 @@ public class RainfallController : ControllerBase
             });
         }
 
-        if(count < 1 || count > 100)
+        if(Regex.Matches(stationId, @"[^0-9]").Count > 0)
         {
             errorDetails.Add(new errorDetail
             {
-                PropertyName = "count",
-                Message = "Count must be between 1 and 100"
+                PropertyName = "stationId",
+                Message = "Invalid StationId format"
             });
         }
 
