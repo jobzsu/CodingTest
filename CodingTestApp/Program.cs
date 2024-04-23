@@ -53,6 +53,8 @@ builder.Services.AddScoped<IRainfallReadingFactory, RainfallReadingFactory>();
 // Inject global error handler middleware
 builder.Services.AddTransient<GlobalErrorHandlerMiddleware>();
 
+builder.Services.AddCors();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -65,9 +67,16 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseMiddleware<GlobalErrorHandlerMiddleware>();
+app.UseCors(options => 
+    options.WithOrigins([
+        "https://localhost:7157",
+        "http://localhost:3000",
+        "https://localhost:44384"
+        ])
+    .AllowAnyHeader()
+    .AllowAnyMethod());
 
-app.UseHttpsRedirection();
+app.UseMiddleware<GlobalErrorHandlerMiddleware>();
 
 app.UseAuthorization();
 
