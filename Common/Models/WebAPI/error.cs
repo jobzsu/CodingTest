@@ -1,8 +1,8 @@
 ﻿namespace Common.Models.WebAPI;
 
-public class error
+public class Error
 {
     public string Message { get; set; }
 
-    public List<errorDetail> Details { get; set; }
+    public List<ErrorDetail> Details { get; set; }
 }

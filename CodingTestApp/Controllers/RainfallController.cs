@@ -1,6 +1,6 @@
 ﻿using Common.Models.WebAPI;
 using Microsoft.AspNetCore.Mvc;
-using RainfaillReadingService.Abstractions;
+using RainfallReadingService.Abstractions;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 
@@ -11,11 +11,13 @@ namespace CodingTestApp.Controllers;
 [SwaggerTag(description: "Operations relating to rainfall")]
 public class RainfallController : ControllerBase
 {
-    private readonly IRainfallReadingFactory _rainfallReadingFactory;
+    private readonly IRainfallReadingService _rainfallReadingFactory;
+    private readonly ILogger<RainfallController> _logger;
 
-    public RainfallController(IRainfallReadingFactory rainfallReadingFactory)
+    public RainfallController(IRainfallReadingService rainfallReadingFactory, ILogger<RainfallController> logger)
     {
         _rainfallReadingFactory = rainfallReadingFactory;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -27,47 +29,50 @@ public class RainfallController : ControllerBase
     [SwaggerResponse(statusCode: StatusCodes.Status200OK, StatusCode = StatusCodes.Status200OK, 
         ContentTypes = ["application/json"], 
         Description = "A list of rainfall readings successfully retrieved", 
-        Type = typeof(rainfallReadingResponse))]
+        Type = typeof(RainfallReadingResponse))]
     [SwaggerResponse(statusCode: StatusCodes.Status400BadRequest, StatusCode = StatusCodes.Status400BadRequest,
         ContentTypes = ["application/json"],
         Description = "Invalid request",
-        Type = typeof(errorResponse))]
+        Type = typeof(ErrorResponse))]
     [SwaggerResponse(statusCode: StatusCodes.Status404NotFound, StatusCode = StatusCodes.Status404NotFound,
         ContentTypes = ["application/json"],
         Description = "No readings found for the specified stationId",
-        Type = typeof(errorResponse))]
+        Type = typeof(ErrorResponse))]
     [SwaggerResponse(statusCode: StatusCodes.Status500InternalServerError, StatusCode = StatusCodes.Status500InternalServerError,
         ContentTypes = ["application/json"],
         Description = "Internal server error",
-        Type = typeof(errorResponse))]
+        Type = typeof(ErrorResponse))]
     public async Task<IActionResult> GetReadingsByStationId(
         [SwaggerParameter("The id of the reading station", Required = true)]string stationId,
         [Range(1, 100)]int count = 10)
     {
         var result = await _rainfallReadingFactory.GetReadingByStationId(stationId, count);
 
-        if (result.IsSuccess)
+        try
         {
-            return Ok(result.Data);
-        }
-        else
-        {
-            var errorResponse = new errorResponse()
+            if (result.IsSuccess)
             {
-                Message = ((error)result.Data).Message,
-                Details = ((error)result.Data).Details
-            };
-
-            switch(result.StatusCode)
-            {
-                case StatusCodes.Status404NotFound:
-                    return NotFound(errorResponse);
-                case StatusCodes.Status400BadRequest:
-                    return BadRequest(errorResponse);
-                case StatusCodes.Status500InternalServerError:
-                default:
-                    return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+                return Ok(result.RainfallReadingResponse);
             }
+            else
+            {
+                switch (result.StatusCode)
+                {
+                    case StatusCodes.Status404NotFound:
+                        return NotFound(result.ErrorResponse);
+                    case StatusCodes.Status400BadRequest:
+                        return BadRequest(result.ErrorResponse);
+                    default:
+                        throw new Exception("Internal Server Error");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                new ErrorResponse() { Details = new List<ErrorDetail>(), Message = "Internal Server Error" });
         }
     }
 }

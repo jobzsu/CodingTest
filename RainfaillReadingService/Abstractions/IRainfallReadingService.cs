@@ -1,8 +1,8 @@
 ﻿using Common.Models;
 
-namespace RainfaillReadingService.Abstractions;
+namespace RainfallReadingService.Abstractions;
 
-public interface IRainfallReadingFactory
+public interface IRainfallReadingService
 {
     Task<Result> GetReadingByStationId(string stationId, 
         int limit = 10, 

@@ -1,12 +1,9 @@
 using CodingTestApp.CustomMiddleware;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
+using Common.Filters;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json.Serialization;
-using RainfaillReadingService;
-using RainfaillReadingService.Abstractions;
+using RainfallReadingService;
+using RainfallReadingService.Abstractions;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
 
@@ -15,9 +12,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers()
-    .AddJsonOptions(opt => opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+// Configure Swagger generation options
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo()
@@ -41,14 +44,25 @@ builder.Services.AddSwaggerGen(options =>
     options.EnableAnnotations();
     options.SupportNonNullableReferenceTypes();
 
+    options.SchemaFilter<CamelCasingPropertiesFilter>();
+    options.SchemaGeneratorOptions.SchemaFilters.Add(new CamelCasingPropertiesFilter());
+    options.DescribeAllParametersInCamelCase();
+
     // Set the comments path for the Swagger JSON and UI.
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     options.IncludeXmlComments(xmlPath);
 });
 
-// Inject factory
-builder.Services.AddScoped<IRainfallReadingFactory, RainfallReadingFactory>();
+// Inject rainfall service
+builder.Services.AddScoped<IRainfallReadingService, RainfallReadingService.RainfallReadingService>();
+
+// Inject http client and configure default http client options
+builder.Services.AddHttpClient("RainfallClient", options =>
+{
+    options.BaseAddress = new Uri(builder.Configuration["RainfallApi:BaseAddress"]!);
+    options.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+});
 
 // Inject global error handler middleware
 builder.Services.AddTransient<GlobalErrorHandlerMiddleware>();
@@ -69,9 +83,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(options => 
     options.WithOrigins([
-        "https://localhost:7157",
-        "http://localhost:3000",
-        "https://localhost:44384"
+        "http://localhost:3000"
         ])
     .AllowAnyHeader()
     .AllowAnyMethod());

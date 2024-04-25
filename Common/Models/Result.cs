@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Common.Models.WebAPI;
+using Microsoft.AspNetCore.Http;
 
 namespace Common.Models;
 
@@ -8,22 +9,26 @@ public class Result
 
     public int StatusCode { get; set; }
 
-    public object Data { get; set; }
+    public RainfallReadingResponse? RainfallReadingResponse { get; set; }
 
-    public Result Success(object data)
+    public ErrorResponse? ErrorResponse { get; set; }
+
+    public Result Success(RainfallReadingResponse data)
     {
         IsSuccess = true;
         StatusCode = StatusCodes.Status200OK;
-        Data = data;
+        RainfallReadingResponse = data;
+        ErrorResponse = null;
 
         return this;
     }
 
-    public Result Error(object data, int status)
+    public Result Error(ErrorResponse error, int status)
     {
         IsSuccess = false;
         StatusCode = status;
-        Data = data;
+        ErrorResponse = error;
+        RainfallReadingResponse = null;
 
         return this;
     }

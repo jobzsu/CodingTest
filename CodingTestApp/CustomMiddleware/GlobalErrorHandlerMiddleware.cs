@@ -23,23 +23,23 @@ public class GlobalErrorHandlerMiddleware : IMiddleware
 			return;
 		}
 
-		List<errorDetail> errs = new();
+		// Initialize error details
+		List<ErrorDetail> errs = new();
 		int statusCode = StatusCodes.Status500InternalServerError;
 
 		try
 		{
+			// Validate stationId parameter
 			object? stationId;
 			if(context.Request.RouteValues.TryGetValue("stationId", out stationId))
 			{
 				if(stationId == null || string.IsNullOrWhiteSpace(stationId.ToString()))
 				{
-                    errs.Add(new errorDetail
+                    errs.Add(new ErrorDetail
 					{
                         PropertyName = "stationId",
                         Message = "StationId is required"
                     });
-
-                    statusCode = StatusCodes.Status400BadRequest;
                 }
 				else
 				{
@@ -47,17 +47,16 @@ public class GlobalErrorHandlerMiddleware : IMiddleware
 
 					if(Regex.Matches(stationIdStr, @"[^0-9]").Count > 0)
 					{
-                        errs.Add(new errorDetail
+                        errs.Add(new ErrorDetail
 						{
                             PropertyName = "stationId",
                             Message = "Invalid stationId"
                         });
-
-                        statusCode = StatusCodes.Status400BadRequest;
 					}
 				}
 			}
 
+			// Validate count parameter
             StringValues countValues = new StringValues();
 			if(context.Request.Query.TryGetValue("count", out countValues))
 			{
@@ -66,29 +65,26 @@ public class GlobalErrorHandlerMiddleware : IMiddleware
 				{
 					if(count < 1 || count > 100)
 					{
-						errs.Add(new errorDetail
+						errs.Add(new ErrorDetail
 						{
                             PropertyName = "count",
                             Message = "Count must be between 1 and 100"
                         });
-
-						statusCode = StatusCodes.Status400BadRequest;
 					}
 				}
 				else
 				{
-                    errs.Add(new errorDetail
+                    errs.Add(new ErrorDetail
                     {
                         PropertyName = "count",
                         Message = "Invalid count parameter"
                     });
-
-                    statusCode = StatusCodes.Status400BadRequest;
                 }
 			}
 
 			if(errs.Any())
 			{
+				statusCode = StatusCodes.Status400BadRequest;
                 throw new Exception("Bad Request");
             }
 
@@ -98,17 +94,15 @@ public class GlobalErrorHandlerMiddleware : IMiddleware
 		{
 			_logger.LogError(ex, ex.Message);
 
-			var err = new error()
+			var err = new ErrorResponse()
 			{
-				Message = ex.Message,
+				Message = statusCode == StatusCodes.Status400BadRequest ? "Bad Request" : "Internal Server Error",
 				Details = errs
 			};
 
             var jsonSerializerOptions = new JsonSerializerOptions()
             {
-                // Enable pascal casing
-                PropertyNamingPolicy = null,
-                // Ignores properties that are null
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             };
             var serializedResponse = JsonSerializer.Serialize(err, jsonSerializerOptions);

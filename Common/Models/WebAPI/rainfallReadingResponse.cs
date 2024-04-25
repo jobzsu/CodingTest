@@ -1,6 +1,6 @@
 ﻿namespace Common.Models.WebAPI;
 
-public class rainfallReadingResponse
+public class RainfallReadingResponse
 {
-    public List<rainfallReading> Readings { get; set; }
+    public List<RainfallReading> Readings { get; set; }
 }

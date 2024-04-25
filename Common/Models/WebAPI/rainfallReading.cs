@@ -1,6 +1,6 @@
 ﻿namespace Common.Models.WebAPI;
 
-public class rainfallReading
+public class RainfallReading
 {
     public DateTime DateMeasured { get; set; }
 

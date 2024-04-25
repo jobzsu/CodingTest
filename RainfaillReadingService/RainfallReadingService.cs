@@ -4,28 +4,21 @@ using Common.Models.WebAPI;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using RainfaillReadingService.Abstractions;
+using RainfallReadingService.Abstractions;
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace RainfaillReadingService;
+namespace RainfallReadingService;
 
-public class RainfallReadingFactory : IRainfallReadingFactory
+public class RainfallReadingService : IRainfallReadingService
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<RainfallReadingFactory> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<RainfallReadingService> _logger;
 
-    public RainfallReadingFactory(ILogger<RainfallReadingFactory> logger)
+    public RainfallReadingService(IHttpClientFactory httpClientFactory,
+        ILogger<RainfallReadingService> logger)
     {
-        _httpClient = new HttpClient()
-        {
-            BaseAddress = new Uri("https://environment.data.gov.uk/flood-monitoring/"),
-            DefaultRequestHeaders =
-            {
-                Accept = { new MediaTypeWithQualityHeaderValue("application/json") }
-            }
-        };
-
+        _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
 
@@ -35,23 +28,26 @@ public class RainfallReadingFactory : IRainfallReadingFactory
     {
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync($"id/stations/{stationId}/readings?_sorted&_limit={limit}");
+            HttpResponseMessage response = await _httpClientFactory
+                .CreateClient("RainfallClient")
+                .GetAsync($"id/stations/{stationId}/readings?_sorted&_limit={limit}");
+
+            var content = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
             {
-                var content = await response.Content.ReadAsStringAsync();
                 var apiResponse = JsonConvert.DeserializeObject<RainfallReadingApiResponseModel>(content);
 
-                var dtoResponse = new rainfallReadingResponse()
+                var dtoResponse = new RainfallReadingResponse()
                 {
-                    Readings = new List<rainfallReading>()
+                    Readings = new List<RainfallReading>()
                 };
 
                 if(apiResponse is not null && apiResponse.Items.Any())
                 {
                     apiResponse.Items.ForEach(item =>
                     {
-                        dtoResponse.Readings.Add(new rainfallReading
+                        dtoResponse.Readings.Add(new RainfallReading
                         {
                             DateMeasured = item.DateTime,
                             AmountMeasured = item.Value
@@ -67,8 +63,6 @@ public class RainfallReadingFactory : IRainfallReadingFactory
             }
             else
             {
-                var content = await response.Content.ReadAsStringAsync();
-
                 _logger.LogError($"Error occurred while fetching data from the API. Status code: {response.StatusCode}. Content: {content}");
 
                 switch(response.StatusCode)
@@ -78,7 +72,7 @@ public class RainfallReadingFactory : IRainfallReadingFactory
                     case HttpStatusCode.BadRequest:
                         return ProcessNotSuccessResponse(StatusCodes.Status400BadRequest, "Bad Request");
                     default:
-                        return ProcessNotSuccessResponse((int)response.StatusCode, "Internal Server Error");
+                        throw new Exception("Internal Server Error");
                 }
             }
         }
@@ -86,14 +80,14 @@ public class RainfallReadingFactory : IRainfallReadingFactory
         {
             _logger.LogError(ex, "Error occurred while fetching data from the API");
 
-            return ProcessNotSuccessResponse(StatusCodes.Status500InternalServerError, "Internal Server Error");
+            throw;
         }
     }
 
     private static Result ProcessNotSuccessResponse(int statusCode, string message)
     {
-        List<errorDetail> errDetails = new();
+        List<ErrorDetail> errDetails = new();
 
-        return new Result().Error(new error() { Details = errDetails, Message = message }, statusCode);
+        return new Result().Error(new ErrorResponse() { Details = errDetails, Message = message }, statusCode);
     }
 }

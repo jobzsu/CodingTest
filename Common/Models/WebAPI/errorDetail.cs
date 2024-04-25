@@ -1,6 +1,6 @@
 ﻿namespace Common.Models.WebAPI;
 
-public class errorDetail
+public class ErrorDetail
 {
     public string PropertyName { get; set; }
 
