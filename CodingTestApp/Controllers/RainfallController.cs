@@ -1,4 +1,5 @@
-﻿using Common.Models.WebAPI;
+﻿using CodingTestApp.CustomFilter;
+using Common.Models.WebAPI;
 using Microsoft.AspNetCore.Mvc;
 using RainfallReadingService.Abstractions;
 using Swashbuckle.AspNetCore.Annotations;
@@ -52,7 +53,7 @@ public class RainfallController : ControllerBase
         {
             if (result.IsSuccess)
             {
-                return Ok(result.RainfallReadingResponse);
+                return Ok(result.Data);
             }
             else
             {

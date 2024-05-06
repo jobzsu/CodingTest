@@ -1,3 +1,4 @@
+using CodingTestApp.CustomFilter;
 using CodingTestApp.CustomMiddleware;
 using Common.Filters;
 using Microsoft.OpenApi.Models;
@@ -11,7 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(config =>
+    {
+        config.Filters.Add(new ParamValidatorActionFilter());
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;

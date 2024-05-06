@@ -21,7 +21,7 @@ public class RainfallControllerTests
         var mockedRainfallReadingFactory = new Mock<IRainfallReadingService>();
         var mockedLogger = new Mock<ILogger<RainfallController>>();
         mockedRainfallReadingFactory.Setup(x => x.GetReadingByStationId(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Result().Success(new RainfallReadingResponse() { Readings = new() }));
+            .ReturnsAsync(new Result<RainfallReadingResponse>().Success(new RainfallReadingResponse() { Readings = new() }));
 
         var readingController = new RainfallController(mockedRainfallReadingFactory.Object, mockedLogger.Object);
 
@@ -50,7 +50,7 @@ public class RainfallControllerTests
         var mockedRainfallReadingFactory = new Mock<IRainfallReadingService>();
         var mockedLogger = new Mock<ILogger<RainfallController>>();
         mockedRainfallReadingFactory.Setup(x => x.GetReadingByStationId(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Result().Error(expectedError, 400))
+            .ReturnsAsync(new Result<RainfallReadingResponse>().Error(expectedError, 400))
             .Verifiable();
 
         var readingController = new RainfallController(mockedRainfallReadingFactory.Object, mockedLogger.Object);
@@ -81,7 +81,7 @@ public class RainfallControllerTests
         var mockedRainfallReadingFactory = new Mock<IRainfallReadingService>();
         var mockedLogger = new Mock<ILogger<RainfallController>>();
         mockedRainfallReadingFactory.Setup(x => x.GetReadingByStationId(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Result().Error(expectedError, 400))
+            .ReturnsAsync(new Result<RainfallReadingResponse>().Error(expectedError, 400))
             .Verifiable();
 
         var readingController = new RainfallController(mockedRainfallReadingFactory.Object, mockedLogger.Object);
@@ -106,7 +106,7 @@ public class RainfallControllerTests
         var mockedRainfallReadingFactory = new Mock<IRainfallReadingService>();
         var mockedLogger = new Mock<ILogger<RainfallController>>();
         mockedRainfallReadingFactory.Setup(x => x.GetReadingByStationId(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Result().Error(expectedError, 404))
+            .ReturnsAsync(new Result<RainfallReadingResponse>().Error(expectedError, 404))
             .Verifiable();
 
         var readingController = new RainfallController(mockedRainfallReadingFactory.Object, mockedLogger.Object);

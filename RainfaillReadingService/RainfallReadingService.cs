@@ -22,7 +22,7 @@ public class RainfallReadingService : IRainfallReadingService
         _logger = logger;
     }
 
-    public async Task<Result> GetReadingByStationId(string stationId, 
+    public async Task<Result<RainfallReadingResponse>> GetReadingByStationId(string stationId, 
         int limit = 10, 
         CancellationToken cancellationToken = default)
     {
@@ -54,7 +54,7 @@ public class RainfallReadingService : IRainfallReadingService
                         });
                     });
 
-                    return new Result().Success(dtoResponse);
+                    return new Result<RainfallReadingResponse>().Success(dtoResponse);
                 }
                 else
                 {
@@ -84,10 +84,10 @@ public class RainfallReadingService : IRainfallReadingService
         }
     }
 
-    private static Result ProcessNotSuccessResponse(int statusCode, string message)
+    private static Result<RainfallReadingResponse> ProcessNotSuccessResponse(int statusCode, string message)
     {
         List<ErrorDetail> errDetails = new();
 
-        return new Result().Error(new ErrorResponse() { Details = errDetails, Message = message }, statusCode);
+        return new Result<RainfallReadingResponse>().Error(new ErrorResponse() { Details = errDetails, Message = message }, statusCode);
     }
 }
